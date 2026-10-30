@@ -17,10 +17,14 @@ Welcome to the **Enku Hotel Management SaaS (PMS)** developer documentation. Thi
 
 ## 📁 Documentation & Module Directory
 
+> [!IMPORTANT]
+> **All developers must start by reading [00-coding-standards-and-git-workflow.md](./00-coding-standards-and-git-workflow.md)** for our Git branching model, PR rules, Enqu brand color palette, and reusable `@/Components/ui` library.
+
 Each document below is a self-contained module specification containing **database schemas, backend endpoints, React/TypeScript page structures, actionable developer task lists (`[ ]`), edge cases, and QA acceptance criteria**:
 
 | File | Module Name | Primary Stakeholders |
 | :--- | :--- | :--- |
+| [**`00-coding-standards-and-git-workflow.md`**](./00-coding-standards-and-git-workflow.md) | **Coding Standards, Git & Design System** | **All Engineering Teams** |
 | [**`01-auth-multitenancy-rbac.md`**](./01-auth-multitenancy-rbac.md) | Authentication, Multi-Tenancy & RBAC | SaaS Admin, Hotel General Manager |
 | [**`02-property-rooms-rates.md`**](./02-property-rooms-rates.md) | Property, Rooms & Rate Management | Hotel Manager, Front Desk Supervisor |
 | [**`03-guest-crm-frontdesk.md`**](./03-guest-crm-frontdesk.md) | Guest CRM & Front Desk (Check-In/Out) | Front Desk Receptionist, Concierge |
