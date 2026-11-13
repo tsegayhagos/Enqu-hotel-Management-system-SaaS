@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Enums\MaintenanceTicketStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\ReservationSource;
 use App\Enums\ReservationStatus;
 use App\Enums\RoomStatus;
 use App\Models\Guest;
 use App\Models\Hotel;
+use App\Models\MaintenanceTicket;
 use App\Models\Reservation;
 use App\Models\Room;
 use App\Support\Tenant;
@@ -65,6 +67,22 @@ class CheckInService
             if ($room->status !== RoomStatus::VacantClean) {
                 throw ValidationException::withMessages([
                     'room_id' => "Room {$room->room_number} cannot be assigned: status is {$room->status->label()} (must be Vacant Clean).",
+                ]);
+            }
+
+            // Guard: No active blocking maintenance ticket on room
+            $blockingTicketExists = MaintenanceTicket::where('hotel_id', $hotel->id)
+                ->where('room_id', $room->id)
+                ->where('blocks_room', true)
+                ->whereIn('status', [
+                    MaintenanceTicketStatus::Open->value,
+                    MaintenanceTicketStatus::InProgress->value,
+                ])
+                ->exists();
+
+            if ($blockingTicketExists) {
+                throw ValidationException::withMessages([
+                    'room_id' => "Room {$room->room_number} has an active blocking maintenance ticket and cannot be checked into.",
                 ]);
             }
 

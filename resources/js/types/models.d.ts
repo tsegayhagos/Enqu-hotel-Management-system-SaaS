@@ -288,3 +288,81 @@ export interface OccupiedStayOption {
     guest_name: string;
     reservation_code: string;
 }
+
+export type HousekeepingTaskType = 'checkout_clean' | 'stayover_clean' | 'deep_clean' | 'turndown';
+export type HousekeepingPriority = 'low' | 'normal' | 'urgent';
+export type HousekeepingTaskStatus = 'pending' | 'in_progress' | 'inspected' | 'completed';
+
+export interface HousekeepingTaskRow {
+    id: number;
+    hotel_id: number;
+    room_id: number;
+    reservation_id: number | null;
+    assigned_to_user_id: number | null;
+    task_type: HousekeepingTaskType;
+    priority: HousekeepingPriority;
+    status: HousekeepingTaskStatus;
+    due_date: string;
+    started_at: string | null;
+    completed_at: string | null;
+    inspected_by_user_id: number | null;
+    notes: string | null;
+    room?: {
+        id: number;
+        room_number: string;
+        floor_number: string | number | null;
+        status: string;
+        room_type?: { id: number; name: string };
+    } | null;
+    assigned_to?: { id: number; name: string; email: string } | null;
+    inspected_by?: { id: number; name: string; email: string } | null;
+}
+
+export type MaintenanceCategory =
+    | 'plumbing'
+    | 'electrical'
+    | 'ac_hvac'
+    | 'furniture'
+    | 'appliance'
+    | 'structural'
+    | 'other';
+
+export type MaintenancePriority = 'low' | 'medium' | 'high' | 'emergency';
+export type MaintenanceTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+
+export interface MaintenanceTicketPhotoRow {
+    id: number;
+    maintenance_ticket_id: number;
+    photo_path: string;
+    caption: string | null;
+}
+
+export interface MaintenanceTicketRow {
+    id: number;
+    hotel_id: number;
+    room_id: number | null;
+    location_label: string | null;
+    reported_by_user_id: number;
+    assigned_to_user_id: number | null;
+    title: string;
+    description: string;
+    category: MaintenanceCategory;
+    priority: MaintenancePriority;
+    status: MaintenanceTicketStatus;
+    blocks_room: boolean;
+    estimated_cost: string | null;
+    actual_cost: string | null;
+    resolution_notes: string | null;
+    resolved_at: string | null;
+    created_at: string;
+    room?: {
+        id: number;
+        room_number: string;
+        floor_number: string | number | null;
+        status: string;
+        room_type?: { id: number; name: string };
+    } | null;
+    reported_by?: { id: number; name: string; email: string } | null;
+    assigned_to?: { id: number; name: string; email: string } | null;
+    photos?: MaintenanceTicketPhotoRow[];
+}

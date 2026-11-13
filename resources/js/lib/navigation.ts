@@ -11,6 +11,8 @@ import {
     Receipt,
     Settings,
     Shirt,
+    Sparkles,
+    Wrench,
     Tag,
     UserCheck,
     Users,
@@ -63,6 +65,14 @@ export const navigation: NavGroup[] = [
             { label: 'Laundry Pipeline', href: '/laundry', icon: Shirt, permission: 'laundry.view' },
             { label: 'New Laundry Order', href: '/laundry/create', icon: PlusCircle, permission: 'laundry.manage' },
             { label: 'Service Catalog', href: '/laundry/services', icon: Tag, permission: 'laundry.view' },
+        ],
+    },
+    {
+        title: 'Housekeeping & Eng',
+        items: [
+            { label: 'My Cleaning Tasks', href: '/housekeeping/my-tasks', icon: Sparkles, permission: 'housekeeping.perform' },
+            { label: 'HK Floor Board', href: '/housekeeping/supervisor', icon: Sparkles, permission: 'housekeeping.view' },
+            { label: 'Maintenance & Eng', href: '/maintenance', icon: Wrench, permission: 'maintenance.report' },
         ],
     },
     {
