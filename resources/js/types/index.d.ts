@@ -55,4 +55,10 @@ export interface Paginated<T> {
     current_page: number;
     last_page: number;
     total: number;
+    from?: number;
+    to?: number;
 }
+
+export type PaginatedResponse<T> = Paginated<T>;
+
+export * from './models';

@@ -13,9 +13,6 @@ class DatabaseSeeder extends Seeder
             DemoHotelSeeder::class,
             RoomInventorySeeder::class,
             FolioBillingSeeder::class,
-            GuestReservationSeeder::class,
-            LaundryCatalogSeeder::class,
-            HousekeepingMaintenanceSeeder::class,
         ]);
     }
 }
