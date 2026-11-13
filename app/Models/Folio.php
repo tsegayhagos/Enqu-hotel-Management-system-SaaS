@@ -49,16 +49,6 @@ class Folio extends Model
         return $this->belongsTo(Hotel::class);
     }
 
-    public function guest(): BelongsTo
-    {
-        return $this->belongsTo(Guest::class)->withoutGlobalScope(HotelScope::class);
-    }
-
-    public function reservation(): BelongsTo
-    {
-        return $this->belongsTo(Reservation::class)->withoutGlobalScope(HotelScope::class);
-    }
-
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class)->withoutGlobalScope(HotelScope::class);
