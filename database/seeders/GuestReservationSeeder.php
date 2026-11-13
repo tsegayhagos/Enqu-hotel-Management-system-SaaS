@@ -21,7 +21,7 @@ class GuestReservationSeeder extends Seeder
 {
     public function run(): void
     {
-        $hotel = Hotel::where('slug', 'grand-enku')->first();
+        $hotel = Hotel::where('slug', 'grand-enku-resort')->first() ?? Hotel::first();
         if (! $hotel) {
             return;
         }
