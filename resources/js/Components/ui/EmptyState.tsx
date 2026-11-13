@@ -6,12 +6,14 @@ export interface EmptyStateProps {
     title: string;
     description?: string;
     icon?: React.ReactNode;
-    action?: {
-        label: string;
-        onClick?: () => void;
-        href?: string;
-        variant?: ButtonProps['variant'];
-    };
+    action?:
+        | {
+              label: string;
+              onClick?: () => void;
+              href?: string;
+              variant?: ButtonProps['variant'];
+          }
+        | React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -31,17 +33,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             )}
             {action && (
                 <div className="mt-5">
-                    {action.href ? (
-                        <a href={action.href}>
-                            <Button variant={action.variant || 'primary'} size="sm">
+                    {React.isValidElement(action) ? (
+                        action
+                    ) : typeof action === 'object' && action !== null && 'label' in action ? (
+                        action.href ? (
+                            <a href={action.href}>
+                                <Button variant={action.variant || 'primary'} size="sm">
+                                    {action.label}
+                                </Button>
+                            </a>
+                        ) : (
+                            <Button variant={action.variant || 'primary'} size="sm" onClick={action.onClick}>
                                 {action.label}
                             </Button>
-                        </a>
-                    ) : (
-                        <Button variant={action.variant || 'primary'} size="sm" onClick={action.onClick}>
-                            {action.label}
-                        </Button>
-                    )}
+                        )
+                    ) : null}
                 </div>
             )}
         </div>
