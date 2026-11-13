@@ -3,32 +3,48 @@
 namespace App\Traits;
 
 use App\Models\Hotel;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Scopes\HotelScope;
+use App\Support\Tenant;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
+/**
+ * Multi-tenant scoping for hotel-owned models.
+ *
+ * - Automatically adds WHERE hotel_id = active hotel (fails closed if no active hotel)
+ * - Automatically sets hotel_id on creation
+ * - Refuses to create a record for a hotel other than the active one
+ */
 trait BelongsToHotel
 {
-    /**
-     * Boot the trait to automatically scope queries and set hotel_id on creation.
-     */
-    protected static function bootBelongsToHotel(): void
+    public static function bootBelongsToHotel(): void
     {
-        static::addGlobalScope('hotel', function (Builder $builder): void {
-            if (session()->has('active_hotel_id')) {
-                $builder->where($builder->getModel()->getTable().'.hotel_id', session('active_hotel_id'));
-            }
-        });
+        static::addGlobalScope(new HotelScope);
 
-        static::creating(function ($model): void {
-            if (empty($model->hotel_id) && session()->has('active_hotel_id')) {
-                $model->hotel_id = session('active_hotel_id');
+        static::creating(function (Model $model): void {
+            $activeId = Tenant::id();
+            $hotelId = $model->getAttribute('hotel_id');
+
+            if ($hotelId === null) {
+                if ($activeId === null) {
+                    throw new LogicException(
+                        'Cannot create '.class_basename($model).' without an active hotel. '
+                        .'Use Tenant::runAs($hotelId, ...) in console code.'
+                    );
+                }
+
+                $model->setAttribute('hotel_id', $activeId);
+
+                return;
+            }
+
+            if ($activeId !== null && (int) $hotelId !== $activeId) {
+                throw new LogicException('Cross-tenant write blocked: hotel_id does not match the active hotel.');
             }
         });
     }
 
-    /**
-     * Get the hotel property that owns this record.
-     */
     public function hotel(): BelongsTo
     {
         return $this->belongsTo(Hotel::class);
