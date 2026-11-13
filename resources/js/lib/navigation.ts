@@ -1,12 +1,20 @@
 import {
     BedDouble,
     Building2,
+    CalendarCheck,
     CalendarDays,
+    Contact,
     LayoutDashboard,
     Layers,
     Moon,
+    PlusCircle,
     Receipt,
     Settings,
+    Shirt,
+    Sparkles,
+    Wrench,
+    Tag,
+    UserCheck,
     Users,
     type LucideIcon,
 } from 'lucide-react';
@@ -44,10 +52,42 @@ export const navigation: NavGroup[] = [
         ],
     },
     {
+        title: 'Front Desk',
+        items: [
+            { label: 'Front Desk Live', href: '/front-desk', icon: UserCheck, permission: 'guest.view' },
+            { label: 'Reservations', href: '/reservations', icon: CalendarCheck, permission: 'guest.view' },
+            { label: 'Guest CRM', href: '/guests', icon: Contact, permission: 'guest.view' },
+        ],
+    },
+    {
+        title: 'Laundry & Valet',
+        items: [
+            { label: 'Laundry Pipeline', href: '/laundry', icon: Shirt, permission: 'laundry.view' },
+            { label: 'New Laundry Order', href: '/laundry/create', icon: PlusCircle, permission: 'laundry.manage' },
+            { label: 'Service Catalog', href: '/laundry/services', icon: Tag, permission: 'laundry.view' },
+        ],
+    },
+    {
+        title: 'Housekeeping & Eng',
+        items: [
+            { label: 'My Cleaning Tasks', href: '/housekeeping/my-tasks', icon: Sparkles, permission: 'housekeeping.perform' },
+            { label: 'HK Floor Board', href: '/housekeeping/supervisor', icon: Sparkles, permission: 'housekeeping.view' },
+            { label: 'Maintenance & Eng', href: '/maintenance', icon: Wrench, permission: 'maintenance.report' },
+        ],
+    },
+    {
         title: 'Finance & Billing',
         items: [
             { label: 'Guest Folios', href: '/folios', icon: Receipt, permission: 'folio.view' },
             { label: 'Night Audit', href: '/night-audit', icon: Moon, permission: 'nightaudit.run' },
+            { label: 'Cashier Handover', href: '/reports/cashier-handover', icon: Receipt, permission: 'cashier.report' },
+        ],
+    },
+    {
+        title: 'Reports & Analytics',
+        items: [
+            { label: 'Executive Reports', href: '/reports', icon: Building2, permission: 'report.view' },
+            { label: 'Occupancy Calendar', href: '/reports/occupancy-calendar', icon: CalendarDays, permission: 'report.view' },
         ],
     },
     {

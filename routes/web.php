@@ -6,7 +6,17 @@ use App\Http\Controllers\Auth\HotelSwitchController;
 use App\Http\Controllers\Billing\FolioController;
 use App\Http\Controllers\Billing\NightAuditController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FrontDesk\CheckInController;
+use App\Http\Controllers\FrontDesk\CheckOutController;
+use App\Http\Controllers\FrontDesk\DashboardController as FrontDeskDashboardController;
+use App\Http\Controllers\FrontDesk\GuestController;
+use App\Http\Controllers\FrontDesk\ReservationController;
+use App\Http\Controllers\Housekeeping\HousekeepingController;
+use App\Http\Controllers\Laundry\LaundryCatalogController;
+use App\Http\Controllers\Laundry\LaundryOrderController;
+use App\Http\Controllers\Maintenance\MaintenanceController;
 use App\Http\Controllers\Rates\RoomRateController;
+use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Rooms\RoomController;
 use App\Http\Controllers\Rooms\RoomStatusController;
 use App\Http\Controllers\Rooms\RoomTypeController;
@@ -92,6 +102,100 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::middleware('permission:pos.charge')->group(function (): void {
         Route::get('pos/active-rooms', [PosChargeController::class, 'activeRooms'])->name('pos.active-rooms');
         Route::post('pos/charge-to-room', [PosChargeController::class, 'chargeToRoom'])->name('pos.charge-to-room');
+    });
+
+    // Module 03: Guest CRM & Front Desk Operations
+    Route::middleware('permission:guest.view')->group(function (): void {
+        Route::get('front-desk', [FrontDeskDashboardController::class, 'index'])->name('front-desk.index');
+        Route::get('guests', [GuestController::class, 'index'])->name('guests.index');
+        Route::get('guests/search', [GuestController::class, 'search'])->name('guests.search');
+        Route::get('reservations', [ReservationController::class, 'index'])->name('reservations.index');
+        Route::get('reservations/{reservation}', [ReservationController::class, 'show'])->name('reservations.show');
+    });
+
+    Route::middleware('permission:guest.manage')->group(function (): void {
+        Route::post('guests', [GuestController::class, 'store'])->name('guests.store');
+        Route::put('guests/{guest}', [GuestController::class, 'update'])->name('guests.update');
+    });
+
+    Route::middleware('permission:reservation.manage')->group(function (): void {
+        Route::post('reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    });
+
+    Route::middleware('permission:checkin.create')->group(function (): void {
+        Route::post('check-in', [CheckInController::class, 'checkIn'])->name('checkin.store');
+        Route::post('check-in/walk-in', [CheckInController::class, 'walkIn'])->name('checkin.walk-in');
+    });
+
+    Route::middleware('permission:checkout.create')->group(function (): void {
+        Route::post('check-out/{reservation}', [CheckOutController::class, 'checkOut'])->name('checkout.store');
+    });
+
+    // Module 04: Laundry & Valet Services
+    Route::middleware('permission:laundry.view')->prefix('laundry')->name('laundry.')->group(function (): void {
+        Route::get('/', [LaundryOrderController::class, 'index'])->name('index');
+        Route::get('services', [LaundryCatalogController::class, 'index'])->name('services.index');
+        Route::get('orders/{order}/print-tag', [LaundryOrderController::class, 'printTag'])->name('orders.print-tag');
+    });
+
+    Route::middleware('permission:laundry.manage')->prefix('laundry')->name('laundry.')->group(function (): void {
+        Route::get('create', [LaundryOrderController::class, 'create'])->name('create');
+        Route::post('orders', [LaundryOrderController::class, 'store'])->name('orders.store');
+        Route::patch('orders/{order}/status', [LaundryOrderController::class, 'updateStatus'])->name('orders.status');
+        Route::post('orders/{order}/post-charge', [LaundryOrderController::class, 'postCharge'])->name('orders.post-charge');
+
+        Route::post('services', [LaundryCatalogController::class, 'store'])->name('services.store');
+        Route::put('services/{service}', [LaundryCatalogController::class, 'update'])->name('services.update');
+        Route::delete('services/{service}', [LaundryCatalogController::class, 'destroy'])->name('services.destroy');
+    });
+
+    // Module 05: Housekeeping & Maintenance
+    Route::prefix('housekeeping')->name('housekeeping.')->group(function (): void {
+        Route::get('my-tasks', [HousekeepingController::class, 'myTasks'])
+            ->middleware('permission:housekeeping.perform|housekeeping.view|housekeeping.manage')
+            ->name('my-tasks');
+
+        Route::patch('tasks/{task}/status', [HousekeepingController::class, 'updateStatus'])
+            ->middleware('permission:housekeeping.perform|housekeeping.manage')
+            ->name('tasks.status');
+
+        Route::get('supervisor', [HousekeepingController::class, 'supervisor'])
+            ->middleware('permission:housekeeping.view|housekeeping.manage')
+            ->name('supervisor');
+
+        Route::middleware('permission:housekeeping.manage')->group(function (): void {
+            Route::post('tasks', [HousekeepingController::class, 'store'])->name('tasks.store');
+            Route::post('tasks/bulk-assign', [HousekeepingController::class, 'bulkAssign'])->name('tasks.bulk-assign');
+            Route::post('stayovers/generate', [HousekeepingController::class, 'generateStayovers'])->name('stayovers.generate');
+        });
+    });
+
+    Route::prefix('maintenance')->name('maintenance.')->group(function (): void {
+        Route::middleware('permission:maintenance.report|maintenance.manage')->group(function (): void {
+            Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+            Route::post('tickets', [MaintenanceController::class, 'store'])->name('tickets.store');
+        });
+
+        Route::middleware('permission:maintenance.manage')->group(function (): void {
+            Route::patch('tickets/{ticket}', [MaintenanceController::class, 'update'])->name('tickets.update');
+            Route::patch('tickets/{ticket}/resolve', [MaintenanceController::class, 'resolve'])->name('tickets.resolve');
+        });
+    });
+
+    // Module 07: Reports & Analytics
+    Route::prefix('reports')->name('reports.')->group(function (): void {
+        Route::get('/', [ReportController::class, 'index'])
+            ->middleware('permission:report.view')
+            ->name('index');
+        Route::get('occupancy-calendar', [ReportController::class, 'occupancyCalendar'])
+            ->middleware('permission:report.view')
+            ->name('occupancy-calendar');
+        Route::get('cashier-handover', [ReportController::class, 'cashierHandover'])
+            ->middleware('permission:cashier.report|report.view')
+            ->name('cashier-handover');
+        Route::get('export', [ReportController::class, 'export'])
+            ->middleware('permission:report.export')
+            ->name('export');
     });
 
     // SaaS platform (Super Admin only)

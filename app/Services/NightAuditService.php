@@ -142,6 +142,8 @@ class NightAuditService
                 $log->notes = "Night audit completed for {$date}. {$occupiedRoomsCount} room(s) processed.";
                 $log->save();
 
+                app(AnalyticsService::class)->snapshotDailyStats($hotel, $date);
+
                 return $log;
             });
         });
