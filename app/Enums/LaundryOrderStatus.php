@@ -34,4 +34,33 @@ enum LaundryOrderStatus: string
             self::Cancelled => 'danger',
         };
     }
+
+    public function nextStatus(): ?self
+    {
+        return match ($this) {
+            self::Received => self::InWash,
+            self::InWash => self::Ironing,
+            self::Ironing => self::Ready,
+            self::Ready => self::Delivered,
+            self::Delivered => null,
+            self::Cancelled => null,
+        };
+    }
+
+    public function allowedTransitions(): array
+    {
+        return match ($this) {
+            self::Received => [self::InWash, self::Cancelled],
+            self::InWash => [self::Ironing, self::Cancelled],
+            self::Ironing => [self::Ready, self::Cancelled],
+            self::Ready => [self::Delivered, self::Cancelled],
+            self::Delivered => [],
+            self::Cancelled => [],
+        };
+    }
+
+    public function canTransitionTo(self $to): bool
+    {
+        return in_array($to, $this->allowedTransitions(), true);
+    }
 }
