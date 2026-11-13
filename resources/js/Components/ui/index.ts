@@ -8,3 +8,4 @@ export * from './PageHeader';
 export * from './Table';
 export * from './EmptyState';
 export * from './Modal';
+export * from './Textarea';

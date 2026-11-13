@@ -1,53 +1,51 @@
-import React, { SelectHTMLAttributes, forwardRef } from 'react';
-
-export interface SelectOption {
-    value: string | number;
-    label: string;
-    disabled?: boolean;
-}
+import { forwardRef, useId, type SelectHTMLAttributes } from 'react';
+import { cn } from '@/lib/cn';
+import type { SelectOption } from '@/types';
 
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label?: string;
     error?: string;
-    helperText?: string;
-    options?: SelectOption[];
+    options: SelectOption[];
+    placeholder?: string;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-    ({ label, error, helperText, options, className = '', id, required, children, ...props }, ref) => {
-        const selectId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+    { label, error, options, placeholder, required, className, id, ...props },
+    ref,
+) {
+    const generated = useId();
+    const selectId = id ?? generated;
 
-        return (
-            <div className="w-full">
-                {label && (
-                    <label htmlFor={selectId} className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        {label} {required && <span className="text-rose-500">*</span>}
-                    </label>
+    return (
+        <div className="w-full">
+            {label && (
+                <label htmlFor={selectId} className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    {label}
+                    {required && <span className="ml-0.5 text-red-500">*</span>}
+                </label>
+            )}
+            <select
+                ref={ref}
+                id={selectId}
+                required={required}
+                aria-invalid={error ? true : undefined}
+                className={cn(
+                    'block h-10 w-full rounded-lg border bg-white px-3 text-sm text-slate-900',
+                    'focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30',
+                    'dark:bg-enquDark-900 dark:text-slate-100',
+                    error ? 'border-red-500' : 'border-slate-300 dark:border-enquDark-600',
+                    className,
                 )}
-                <select
-                    ref={ref}
-                    id={selectId}
-                    required={required}
-                    className={`block w-full rounded-lg border py-2 px-3 text-sm transition-colors dark:bg-slate-900 dark:text-slate-100 ${
-                        error
-                            ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20 text-rose-900 dark:text-rose-200'
-                            : 'border-slate-300 dark:border-slate-700 focus:border-primary-700 focus:ring-primary-700/20'
-                    } focus:outline-none focus:ring-2 ${className}`}
-                    {...props}
-                >
-                    {options
-                        ? options.map((opt) => (
-                              <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-                                  {opt.label}
-                              </option>
-                          ))
-                        : children}
-                </select>
-                {error && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
-                {!error && helperText && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
-            </div>
-        );
-    }
-);
-
-Select.displayName = 'Select';
+                {...props}
+            >
+                {placeholder !== undefined && <option value="">{placeholder}</option>}
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+            {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+        </div>
+    );
+});

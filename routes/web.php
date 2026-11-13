@@ -3,6 +3,10 @@
 use App\Http\Controllers\Admin\HotelController;
 use App\Http\Controllers\Auth\HotelSwitchController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Rates\RoomRateController;
+use App\Http\Controllers\Rooms\RoomController;
+use App\Http\Controllers\Rooms\RoomStatusController;
+use App\Http\Controllers\Rooms\RoomTypeController;
 use App\Http\Controllers\Settings\HotelSettingsController;
 use App\Http\Controllers\Settings\StaffController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +37,31 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
             Route::put('staff/{user}', [StaffController::class, 'update'])->name('staff.update');
             Route::delete('staff/{user}', [StaffController::class, 'destroy'])->name('staff.destroy');
         });
+    });
+
+    // Module 02: Property, rooms & rates
+    Route::middleware('permission:room.view')->group(function (): void {
+        Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index');
+    });
+
+    Route::middleware('permission:room.manage')->group(function (): void {
+        Route::get('rooms/create', [RoomController::class, 'create'])->name('rooms.create');
+        Route::post('rooms', [RoomController::class, 'store'])->name('rooms.store');
+        Route::post('rooms/bulk', [RoomController::class, 'bulkStore'])->name('rooms.bulk');
+        Route::put('rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
+        Route::patch('rooms/{room}/status', [RoomStatusController::class, 'update'])->name('rooms.status');
+
+        Route::get('room-types', [RoomTypeController::class, 'index'])->name('room-types.index');
+        Route::post('room-types', [RoomTypeController::class, 'store'])->name('room-types.store');
+        Route::put('room-types/{roomType}', [RoomTypeController::class, 'update'])->name('room-types.update');
+        Route::delete('room-types/{roomType}', [RoomTypeController::class, 'destroy'])->name('room-types.destroy');
+    });
+
+    Route::middleware('permission:rate.manage')->group(function (): void {
+        Route::get('rates', [RoomRateController::class, 'index'])->name('rates.index');
+        Route::post('rates', [RoomRateController::class, 'store'])->name('rates.store');
+        Route::put('rates/{rate}', [RoomRateController::class, 'update'])->name('rates.update');
+        Route::delete('rates/{rate}', [RoomRateController::class, 'destroy'])->name('rates.destroy');
     });
 
     // SaaS platform (Super Admin only)
