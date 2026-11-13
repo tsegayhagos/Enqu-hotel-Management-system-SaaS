@@ -115,3 +115,123 @@ export interface HotelRow {
     users_count: number;
     created_at: string | null;
 }
+
+export interface FolioRow {
+    id: number;
+    hotel_id: number;
+    reservation_id: number | null;
+    guest_id: number | null;
+    room_id: number | null;
+    folio_number: string;
+    guest_name: string | null;
+    status: 'open' | 'settled' | 'closed' | 'void';
+    total_charges: string;
+    total_payments: string;
+    balance: string;
+    currency: string;
+    notes: string | null;
+    closed_at: string | null;
+    created_at: string;
+    room?: { id: number; room_number: string; room_type?: { name: string } };
+    transactions?: FolioTransactionRow[];
+}
+
+export interface FolioTransactionRow {
+    id: number;
+    hotel_id: number;
+    folio_id: number;
+    user_id: number | null;
+    transaction_type: string;
+    description: string;
+    amount: string;
+    reference_id: string | null;
+    payment_method: string;
+    is_night_audit_post: boolean;
+    is_immutable: boolean;
+    posted_at: string;
+    user?: { id: number; name: string } | null;
+}
+
+export interface FolioSummary {
+    folio_number: string;
+    status: string;
+    currency: string;
+    total_charges: string;
+    total_payments: string;
+    balance: string;
+    charges_by_type: Record<string, string>;
+    payments_by_method: Record<string, string>;
+    is_settled: boolean;
+}
+
+export interface NightAuditLogRow {
+    id: number;
+    hotel_id: number;
+    audit_date: string;
+    occupied_rooms_count: number;
+    total_room_revenue_posted: string;
+    total_tax_posted: string;
+    status: string;
+    notes: string | null;
+    created_at: string;
+    executed_by?: { id: number; name: string } | null;
+}
+
+export interface GuestRow {
+    id: number;
+    hotel_id: number;
+    first_name: string;
+    last_name: string;
+    name?: string;
+    full_name?: string;
+    email: string | null;
+    phone: string;
+    id_type: 'passport' | 'national_id' | 'drivers_license' | 'other';
+    id_number: string;
+    nationality: string;
+    car_plate_number: string | null;
+    vip_level: 'standard' | 'silver' | 'gold' | 'vip';
+    is_blacklisted: boolean;
+    blacklist_reason: string | null;
+    total_stays_count: number;
+    special_preferences: string | null;
+    reservations_count?: number;
+    created_at: string;
+}
+
+export interface ReservationRow {
+    id: number;
+    hotel_id: number;
+    reservation_code: string;
+    guest_id: number;
+    room_id: number | null;
+    room_type_id: number;
+    check_in_date: string;
+    check_out_date: string;
+    actual_check_in_at: string | null;
+    actual_check_out_at: string | null;
+    adults_count: number;
+    children_count: number;
+    daily_rate: string;
+    total_amount: string;
+    advance_deposit_paid: string;
+    keycard_number: string | null;
+    status: 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show';
+    source: 'walk_in' | 'phone' | 'website' | 'ota_booking';
+    special_requests: string | null;
+    cancellation_reason: string | null;
+    created_at: string;
+    guest?: GuestRow;
+    room?: { id: number; room_number: string; floor_number: number; status: string; room_type?: { name: string } };
+    room_type?: { id: number; name: string; base_occupancy: number; max_occupancy: number };
+    active_folio?: FolioRow | null;
+    folios?: FolioRow[];
+}
+
+export interface FrontDeskMetrics {
+    expected_arrivals: number;
+    expected_departures: number;
+    in_house_stays: number;
+    available_clean_rooms: number;
+    business_date: string;
+}

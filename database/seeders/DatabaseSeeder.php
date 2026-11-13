@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             DemoHotelSeeder::class,
             RoomInventorySeeder::class,
+            FolioBillingSeeder::class,
+            GuestReservationSeeder::class,
         ]);
     }
 }

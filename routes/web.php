@@ -1,8 +1,16 @@
 <?php
 
 use App\Http\Controllers\Admin\HotelController;
+use App\Http\Controllers\Api\PosChargeController;
 use App\Http\Controllers\Auth\HotelSwitchController;
+use App\Http\Controllers\Billing\FolioController;
+use App\Http\Controllers\Billing\NightAuditController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FrontDesk\CheckInController;
+use App\Http\Controllers\FrontDesk\CheckOutController;
+use App\Http\Controllers\FrontDesk\DashboardController as FrontDeskDashboardController;
+use App\Http\Controllers\FrontDesk\GuestController;
+use App\Http\Controllers\FrontDesk\ReservationController;
 use App\Http\Controllers\Rates\RoomRateController;
 use App\Http\Controllers\Rooms\RoomController;
 use App\Http\Controllers\Rooms\RoomStatusController;
@@ -62,6 +70,60 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
         Route::post('rates', [RoomRateController::class, 'store'])->name('rates.store');
         Route::put('rates/{rate}', [RoomRateController::class, 'update'])->name('rates.update');
         Route::delete('rates/{rate}', [RoomRateController::class, 'destroy'])->name('rates.destroy');
+    });
+
+    // Module 06: Billing, Guest Folios, POS & Night Audit
+    Route::middleware('permission:folio.view')->group(function (): void {
+        Route::get('folios', [FolioController::class, 'index'])->name('folios.index');
+        Route::get('folios/{folio}', [FolioController::class, 'show'])->name('folios.show');
+        Route::get('folios/{folio}/invoice', [FolioController::class, 'printInvoice'])->name('folios.invoice');
+    });
+
+    Route::middleware('permission:folio.manage')->group(function (): void {
+        Route::post('folios/{folio}/charges', [FolioController::class, 'storeCharge'])->name('folios.charges.store');
+        Route::post('folios/{folio}/split', [FolioController::class, 'split'])->name('folios.split');
+        Route::post('folios/{folio}/close', [FolioController::class, 'close'])->name('folios.close');
+    });
+
+    Route::middleware('permission:payment.process')->group(function (): void {
+        Route::post('folios/{folio}/payments', [FolioController::class, 'storePayment'])->name('folios.payments.store');
+    });
+
+    Route::middleware('permission:nightaudit.run')->group(function (): void {
+        Route::get('night-audit', [NightAuditController::class, 'index'])->name('night-audit.index');
+        Route::post('night-audit/run', [NightAuditController::class, 'runManual'])->name('night-audit.run');
+    });
+
+    Route::middleware('permission:pos.charge')->group(function (): void {
+        Route::get('pos/active-rooms', [PosChargeController::class, 'activeRooms'])->name('pos.active-rooms');
+        Route::post('pos/charge-to-room', [PosChargeController::class, 'chargeToRoom'])->name('pos.charge-to-room');
+    });
+
+    // Module 03: Guest CRM & Front Desk Operations
+    Route::middleware('permission:guest.view')->group(function (): void {
+        Route::get('front-desk', [FrontDeskDashboardController::class, 'index'])->name('front-desk.index');
+        Route::get('guests', [GuestController::class, 'index'])->name('guests.index');
+        Route::get('guests/search', [GuestController::class, 'search'])->name('guests.search');
+        Route::get('reservations', [ReservationController::class, 'index'])->name('reservations.index');
+        Route::get('reservations/{reservation}', [ReservationController::class, 'show'])->name('reservations.show');
+    });
+
+    Route::middleware('permission:guest.manage')->group(function (): void {
+        Route::post('guests', [GuestController::class, 'store'])->name('guests.store');
+        Route::put('guests/{guest}', [GuestController::class, 'update'])->name('guests.update');
+    });
+
+    Route::middleware('permission:reservation.manage')->group(function (): void {
+        Route::post('reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    });
+
+    Route::middleware('permission:checkin.create')->group(function (): void {
+        Route::post('check-in', [CheckInController::class, 'checkIn'])->name('checkin.store');
+        Route::post('check-in/walk-in', [CheckInController::class, 'walkIn'])->name('checkin.walk-in');
+    });
+
+    Route::middleware('permission:checkout.create')->group(function (): void {
+        Route::post('check-out/{reservation}', [CheckOutController::class, 'checkOut'])->name('checkout.store');
     });
 
     // SaaS platform (Super Admin only)
