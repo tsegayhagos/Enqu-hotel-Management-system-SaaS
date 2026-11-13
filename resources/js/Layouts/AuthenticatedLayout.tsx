@@ -1,179 +1,168 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Hotel, LogOut, Menu, Moon, Sun, X } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { Select } from '@/Components/ui';
+import { cn } from '@/lib/cn';
+import { navigation } from '@/lib/navigation';
+import { usePermissions } from '@/lib/permissions';
+import { useTheme } from '@/lib/theme';
+import type { SharedProps } from '@/types';
 
-export default function Authenticated({
-    header,
-    children,
-}: PropsWithChildren<{ header?: ReactNode }>) {
-    const user = usePage().props.auth.user;
+interface Props {
+    title?: string;
+    children: ReactNode;
+}
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+export default function AuthenticatedLayout({ title, children }: Props) {
+    const { auth, hotel, hotels, flash } = usePage<SharedProps>().props;
+    const { url } = usePage();
+    const { can, isSuperAdmin } = usePermissions();
+    const { dark, toggle } = useTheme();
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    const groups = navigation
+        .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => (item.superAdminOnly ? isSuperAdmin : can(item.permission))),
+        }))
+        .filter((group) => group.items.length > 0);
+
+    const isActive = (href: string) => url === href || url.startsWith(`${href}/`) || url.startsWith(`${href}?`);
+
+    const switchHotel = (hotelId: string) => {
+        if (hotelId) {
+            router.post('/switch-hotel', { hotel_id: Number(hotelId) });
+        }
+    };
+
+    const sidebar = (
+        <nav aria-label="Main" className="flex h-full flex-col gap-6 overflow-y-auto px-3 py-5">
+            {groups.map((group) => (
+                <div key={group.title}>
+                    <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{group.title}</p>
+                    <ul className="space-y-1">
+                        {group.items.map((item) => (
+                            <li key={item.href}>
+                                <Link
+                                    href={item.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    className={cn(
+                                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                                        isActive(item.href)
+                                            ? 'bg-primary-500/20 text-white'
+                                            : 'text-slate-300 hover:bg-white/5 hover:text-white',
+                                    )}
+                                >
+                                    <item.icon className="h-4 w-4" aria-hidden />
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+        </nav>
+    );
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <nav className="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
-                        <div className="flex">
-                            <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                                </Link>
-                            </div>
+        <div className="min-h-screen bg-slate-50 dark:bg-enquDark-900">
+            <Head title={title} />
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div>
-                        </div>
-
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
-                                            >
-                                                {user.name}
-
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
-
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
-                                            Profile
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('logout')}
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <div className="-me-2 flex items-center sm:hidden">
-                            <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-gray-900 dark:hover:text-gray-400 dark:focus:bg-gray-900 dark:focus:text-gray-400"
-                            >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+            {/* Desktop sidebar */}
+            <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-enquDark-900 lg:flex dark:border-r dark:border-enquDark-700">
+                <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-500 text-white">
+                        <Hotel className="h-5 w-5" aria-hidden />
+                    </span>
+                    <span className="truncate text-sm font-semibold text-white">{hotel?.name ?? 'Enku PMS'}</span>
                 </div>
+                {sidebar}
+            </aside>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
+            {/* Mobile drawer */}
+            {menuOpen && (
+                <div className="no-print fixed inset-0 z-40 lg:hidden">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} aria-hidden />
+                    <aside className="relative h-full w-64 bg-enquDark-900">
+                        <button
+                            type="button"
+                            onClick={() => setMenuOpen(false)}
+                            className="absolute right-3 top-3 rounded-md p-1 text-slate-300 hover:bg-white/10"
+                            aria-label="Close menu"
                         >
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800 dark:text-gray-200">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
+                            <X className="h-5 w-5" />
+                        </button>
+                        <div className="pt-12">{sidebar}</div>
+                    </aside>
                 </div>
-            </nav>
-
-            {header && (
-                <header className="bg-white shadow dark:bg-gray-800">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
             )}
 
-            <main>{children}</main>
+            <div className="lg:pl-64">
+                {/* Top header */}
+                <header className="no-print sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6 dark:border-enquDark-700 dark:bg-enquDark-800/90">
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setMenuOpen(true)}
+                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden dark:text-slate-300 dark:hover:bg-enquDark-700"
+                            aria-label="Open navigation"
+                        >
+                            <Menu className="h-5 w-5" />
+                        </button>
+
+                        {hotels && hotels.length > 1 && (
+                            <div className="w-56">
+                                <Select
+                                    label=""
+                                    value={hotel?.id ? String(hotel.id) : ''}
+                                    onChange={(event) => switchHotel(event.target.value)}
+                                    options={hotels.map((h) => ({ value: String(h.id), label: h.name }))}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={toggle}
+                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-enquDark-700"
+                            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                        >
+                            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        </button>
+
+                        <span className="hidden text-sm text-slate-600 sm:inline dark:text-slate-300">
+                            {auth.user?.name}
+                        </span>
+
+                        <Link
+                            href="/logout"
+                            method="post"
+                            as="button"
+                            className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-enquDark-700 dark:hover:text-white"
+                        >
+                            <LogOut className="h-4 w-4" />
+                            <span className="hidden sm:inline">Logout</span>
+                        </Link>
+                    </div>
+                </header>
+
+                {/* Alerts */}
+                {flash.success && (
+                    <div className="border-b border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        {flash.success}
+                    </div>
+                )}
+                {flash.error && (
+                    <div className="border-b border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-200">
+                        {flash.error}
+                    </div>
+                )}
+
+                {/* Page body */}
+                <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+            </div>
         </div>
     );
 }

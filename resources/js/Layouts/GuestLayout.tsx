@@ -1,19 +1,19 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
-import { PropsWithChildren } from 'react';
+import { Hotel } from 'lucide-react';
+import type { ReactNode } from 'react';
 
-export default function Guest({ children }: PropsWithChildren) {
+export default function GuestLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0 dark:bg-gray-900">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
+        <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10 dark:bg-enquDark-900">
+            <div className="mb-6 flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-800 text-white dark:bg-primary-500">
+                    <Hotel className="h-6 w-6" aria-hidden />
+                </span>
+                <div>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-slate-50">Enku PMS</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Hotel Management Suite</p>
+                </div>
             </div>
-
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg dark:bg-gray-800">
-                {children}
-            </div>
+            <div className="w-full max-w-md">{children}</div>
         </div>
     );
 }
