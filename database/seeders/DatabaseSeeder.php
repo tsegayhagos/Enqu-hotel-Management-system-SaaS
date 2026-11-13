@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             RoomInventorySeeder::class,
             FolioBillingSeeder::class,
             GuestReservationSeeder::class,
+            LaundryCatalogSeeder::class,
         ]);
     }
 }

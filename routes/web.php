@@ -11,6 +11,8 @@ use App\Http\Controllers\FrontDesk\CheckOutController;
 use App\Http\Controllers\FrontDesk\DashboardController as FrontDeskDashboardController;
 use App\Http\Controllers\FrontDesk\GuestController;
 use App\Http\Controllers\FrontDesk\ReservationController;
+use App\Http\Controllers\Laundry\LaundryCatalogController;
+use App\Http\Controllers\Laundry\LaundryOrderController;
 use App\Http\Controllers\Rates\RoomRateController;
 use App\Http\Controllers\Rooms\RoomController;
 use App\Http\Controllers\Rooms\RoomStatusController;
@@ -124,6 +126,24 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
 
     Route::middleware('permission:checkout.create')->group(function (): void {
         Route::post('check-out/{reservation}', [CheckOutController::class, 'checkOut'])->name('checkout.store');
+    });
+
+    // Module 04: Laundry & Valet Services
+    Route::middleware('permission:laundry.view')->prefix('laundry')->name('laundry.')->group(function (): void {
+        Route::get('/', [LaundryOrderController::class, 'index'])->name('index');
+        Route::get('services', [LaundryCatalogController::class, 'index'])->name('services.index');
+        Route::get('orders/{order}/print-tag', [LaundryOrderController::class, 'printTag'])->name('orders.print-tag');
+    });
+
+    Route::middleware('permission:laundry.manage')->prefix('laundry')->name('laundry.')->group(function (): void {
+        Route::get('create', [LaundryOrderController::class, 'create'])->name('create');
+        Route::post('orders', [LaundryOrderController::class, 'store'])->name('orders.store');
+        Route::patch('orders/{order}/status', [LaundryOrderController::class, 'updateStatus'])->name('orders.status');
+        Route::post('orders/{order}/post-charge', [LaundryOrderController::class, 'postCharge'])->name('orders.post-charge');
+
+        Route::post('services', [LaundryCatalogController::class, 'store'])->name('services.store');
+        Route::put('services/{service}', [LaundryCatalogController::class, 'update'])->name('services.update');
+        Route::delete('services/{service}', [LaundryCatalogController::class, 'destroy'])->name('services.destroy');
     });
 
     // SaaS platform (Super Admin only)

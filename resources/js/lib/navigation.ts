@@ -7,8 +7,11 @@ import {
     LayoutDashboard,
     Layers,
     Moon,
+    PlusCircle,
     Receipt,
     Settings,
+    Shirt,
+    Tag,
     UserCheck,
     Users,
     type LucideIcon,
@@ -52,6 +55,14 @@ export const navigation: NavGroup[] = [
             { label: 'Front Desk Live', href: '/front-desk', icon: UserCheck, permission: 'guest.view' },
             { label: 'Reservations', href: '/reservations', icon: CalendarCheck, permission: 'guest.view' },
             { label: 'Guest CRM', href: '/guests', icon: Contact, permission: 'guest.view' },
+        ],
+    },
+    {
+        title: 'Laundry & Valet',
+        items: [
+            { label: 'Laundry Pipeline', href: '/laundry', icon: Shirt, permission: 'laundry.view' },
+            { label: 'New Laundry Order', href: '/laundry/create', icon: PlusCircle, permission: 'laundry.manage' },
+            { label: 'Service Catalog', href: '/laundry/services', icon: Tag, permission: 'laundry.view' },
         ],
     },
     {

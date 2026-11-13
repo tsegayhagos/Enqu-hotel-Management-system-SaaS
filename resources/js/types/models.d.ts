@@ -235,3 +235,56 @@ export interface FrontDeskMetrics {
     available_clean_rooms: number;
     business_date: string;
 }
+
+export interface LaundryServiceRow {
+    id: number;
+    hotel_id: number;
+    item_name: string;
+    category: 'apparel' | 'delicate' | 'linen' | 'uniform';
+    service_type: 'wash_and_iron' | 'iron_only' | 'dry_clean';
+    standard_price: string;
+    express_price: string;
+    is_active: boolean;
+}
+
+export interface LaundryOrderItemRow {
+    id: number;
+    laundry_order_id: number;
+    laundry_service_id: number;
+    quantity: number;
+    unit_price: string;
+    subtotal: string;
+    notes: string | null;
+    service?: LaundryServiceRow;
+}
+
+export interface LaundryOrderRow {
+    id: number;
+    hotel_id: number;
+    order_number: string;
+    reservation_id: number | null;
+    guest_id: number | null;
+    room_id: number | null;
+    order_type: 'guest_valet' | 'in_house_linen' | 'walk_in';
+    is_express: boolean;
+    status: 'received' | 'in_wash' | 'ironing' | 'ready' | 'delivered' | 'cancelled';
+    payment_method: 'charge_to_room' | 'cash' | 'card' | 'unpaid';
+    total_amount: string;
+    special_instructions: string | null;
+    received_at: string;
+    delivered_at: string | null;
+    room?: { id: number; room_number: string } | null;
+    guest?: { id: number; first_name: string; last_name: string } | null;
+    reservation?: { id: number; reservation_code: string } | null;
+    processed_by?: { id: number; name: string } | null;
+    items?: LaundryOrderItemRow[];
+}
+
+export interface OccupiedStayOption {
+    reservation_id: number;
+    room_id: number;
+    room_number: string;
+    guest_id: number;
+    guest_name: string;
+    reservation_code: string;
+}
