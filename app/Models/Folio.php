@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FolioStatus;
+use App\Enums\ReservationStatus;
 use App\Enums\TransactionType;
 use App\Models\Scopes\HotelScope;
 use App\Support\Money;
@@ -47,6 +48,16 @@ class Folio extends Model
     public function hotel(): BelongsTo
     {
         return $this->belongsTo(Hotel::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class)->withoutGlobalScope(HotelScope::class);
+    }
+
+    public function reservation(): BelongsTo
+    {
+        return $this->belongsTo(Reservation::class)->withoutGlobalScope(HotelScope::class);
     }
 
     public function room(): BelongsTo
@@ -121,9 +132,15 @@ class Folio extends Model
             $this->balance = Money::fromCents($balanceCents);
 
             if ($this->status !== FolioStatus::Closed && $this->status !== FolioStatus::Void) {
-                if ($balanceCents === 0 && $chargesCents > 0) {
+                $isActiveStay = $this->reservation_id !== null
+                    && Reservation::withoutGlobalScopes()
+                        ->where('id', $this->reservation_id)
+                        ->where('status', ReservationStatus::CheckedIn->value)
+                        ->exists();
+
+                if ($balanceCents === 0 && $chargesCents > 0 && ! $isActiveStay) {
                     $this->status = FolioStatus::Settled;
-                } elseif ($balanceCents > 0) {
+                } elseif ($balanceCents > 0 || $isActiveStay) {
                     $this->status = FolioStatus::Open;
                 }
             }

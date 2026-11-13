@@ -40,7 +40,7 @@ class CheckOutService
             // Find active folio for this reservation
             $folio = Folio::where('hotel_id', $hotel->id)
                 ->where('reservation_id', $reservation->id)
-                ->where('status', FolioStatus::Open)
+                ->whereIn('status', [FolioStatus::Open, FolioStatus::Settled])
                 ->first();
 
             // Guard: Folio Balance
@@ -52,8 +52,8 @@ class CheckOutService
             }
 
             return DB::transaction(function () use ($reservation, $folio, $authorizingUser) {
-                // 1. Close folio if open
-                if ($folio && $folio->isOpen()) {
+                // 1. Close folio if open or settled
+                if ($folio && in_array($folio->status, [FolioStatus::Open, FolioStatus::Settled], true)) {
                     $this->folioService->closeFolio($folio, $authorizingUser);
                 }
 
